@@ -1,0 +1,10 @@
+# code: language=yaml
+#
+# XR Status Output
+#
+
+{{- $status := $state.status }}
+---
+apiVersion: helm.hops.ops.com.ai/v1alpha1
+kind: MinIO
+status: {{ $status | toJson }}

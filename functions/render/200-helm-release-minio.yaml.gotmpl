@@ -1,0 +1,45 @@
+# code: language=yaml
+#
+# MinIO Helm Release
+#
+
+{{- $m := $state.minio }}
+---
+apiVersion: helm.m.crossplane.io/v1beta1
+kind: Release
+metadata:
+  name: {{ $m.releaseName }}
+  annotations:
+    {{ setResourceNameAnnotation "helm-release-minio" }}
+  labels: {{ $m.labels | toJson }}
+spec:
+  managementPolicies: {{ $m.managementPolicies | toJson }}
+  forProvider:
+    chart:
+      name: minio
+      repository: https://charts.min.io/
+      version: 5.4.0
+    namespace: {{ $m.namespace }}
+    {{- if $m.overrideAllValues }}
+    values:
+      {{- toYaml $m.overrideAllValues | nindent 6 }}
+    {{- else }}
+    values:
+      fullnameOverride: minio
+      nameOverride: minio
+      mode: standalone
+      replicas: 1
+      persistence:
+        enabled: true
+        size: 10Gi
+      resources:
+        requests:
+          memory: 512Mi
+      {{- if $m.values }}
+      {{- toYaml $m.values | nindent 6 }}
+      {{- end }}
+    {{- end }}
+  rollbackLimit: 3
+  providerConfigRef:
+    name: {{ $m.providerConfigRef.name }}
+    kind: {{ $m.providerConfigRef.kind }}
